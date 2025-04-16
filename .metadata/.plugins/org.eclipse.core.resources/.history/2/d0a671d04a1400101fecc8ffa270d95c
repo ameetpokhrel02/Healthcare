@@ -1,0 +1,81 @@
+package controller;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import model.Healthcare;
+import model.HealthcareDao;
+
+import java.io.IOException;
+
+/**
+ * Servlet implementation class AdminLoginServlet
+ */
+@WebServlet("/AdminLoginServlet")
+public class AdminLoginServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+       
+   
+    public AdminLoginServlet() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		response.getWriter().append("Served at: ").append(request.getContextPath());
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
+		String username = request.getParameter("username");
+		String password = request.getParameter("password");
+		String role = request.getParameter("role");
+		
+		if(username==null || username.trim().isEmpty() || password==null || password.trim().isEmpty() 
+			|| role.trim().isEmpty()) {
+			request.setAttribute("Error", "Username, password and role are required.");
+			request.getRequestDispatcher("/view/AdminLogin.jsp").forward(request, response);
+			return;
+		}
+		
+		Healthcare healthcare = new Healthcare(username, password, role);
+		healthcare.setAdminUsername(username);
+		healthcare.setAdminPassword(password);
+		healthcare.setRole(role);
+		
+		
+		HealthcareDao healthcareDao = new HealthcareDao();
+		
+		try {
+			if(healthcareDao.adminLogin(healthcare)) {
+				HttpSession session = request.getSession();
+				session.setAttribute("adminUsername", username);
+				session.setAttribute("role", role);
+				session.setMaxInactiveInterval(30*60);
+				System.out.println("Login Successfully.");
+				response.sendRedirect(request.getContextPath()+"/view/AdminDashboard.jsp");
+			}else {
+				request.setAttribute("Error", "Invalid username or password");
+				request.getRequestDispatcher("/view/AdminLogin.jsp").forward(request, response);
+				return;
+			}
+		}catch(Exception ex) {
+			ex.printStackTrace();
+	        request.setAttribute("error", "System error. Please try again.");
+	        request.getRequestDispatcher("/view/AdminLogin.jsp").forward(request, response);
+	        return;
+		}
+		
+	}
+
+}

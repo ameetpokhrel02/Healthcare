@@ -1,0 +1,429 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" 
+pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Doctor Login | HealthCare Appointment System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3a86ff;
+            --primary-dark: #2667cc;
+            --secondary-color: #4cc9f0;
+            --accent-color: #4895ef;
+            --light-gray: #f8f9fa;
+            --dark-gray: #6c757d;
+            --danger-color: #e63946;
+            --success-color: #2a9d8f;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: #f0f8ff;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+         .navbar {
+            background-color: var(--secondary-color);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 5%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .logo-container:hover {
+            transform: scale(1.05);
+        }
+        
+        .logo {
+            width: 45px;
+            height: 45px;
+            margin-right: 12px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--light-color);
+        }
+        
+        .logo-name {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        
+        .logo-name span {
+            color: var(--primary-color);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .nav-btn {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            padding: 10px 20px;
+            border-radius: 30px;
+            transition: all 0.3s;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-btn i {
+            font-size: 14px;
+        }
+        
+        .admin-btn {
+            background-color: var(--accent-color);
+        }
+        
+        .doctor-btn {
+            background-color: var(--primary-color);
+        }
+        
+        .user-btn {
+            background-color: var(--success-color);
+        }
+        
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+         .form-dropdown {
+            margin-bottom: 1.8rem;
+            position: relative;
+        }
+        
+        .form-dropdown label {
+            display: block;
+            margin-bottom: 0.6rem;
+            color: var(--dark-gray);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        
+        .dropdown-select {
+            width: 100%;
+            padding: 0.9rem 1rem 0.9rem 3.2rem;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--border-radius);
+            font-size: 0.95rem;
+            transition: var(--transition);
+            background-color: #f8fafc;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+        }
+        
+        .dropdown-select:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
+            outline: none;
+            background-color: white;
+        }
+        
+        .dropdown-icon {
+            position: absolute;
+            left: 1rem;
+            top: 2.7rem;
+            color: var(--dark-gray);
+            font-size: 1.2rem;
+        }
+        
+        .login-wrapper {
+            display: flex;
+            min-height: calc(100vh - 72px);
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            background: url('images/doctor-bg.jpg') no-repeat center center;
+            background-size: cover;
+        }
+        
+        .login-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(58, 134, 255, 0.85);
+        }
+        
+        .login-container {
+            width: 100%;
+            max-width: 450px;
+            padding: 2.5rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            position: relative;
+            z-index: 1;
+            transform: translateY(0);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        
+        .login-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .login-header h2 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .login-header p {
+            color: var(--dark-gray);
+            font-size: 0.9rem;
+        }
+        
+        .doctor-icon {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--dark-gray);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem 1rem 0.8rem 3rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            background-color: #f9f9f9;
+        }
+        
+        .form-group input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(72, 149, 239, 0.2);
+            outline: none;
+            background-color: white;
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 2.5rem;
+            color: var(--dark-gray);
+            font-size: 1.1rem;
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 0.9rem;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 1rem;
+            box-shadow: 0 4px 6px rgba(58, 134, 255, 0.2);
+        }
+        
+        .login-btn:hover {
+            background: linear-gradient(to right, var(--primary-dark), var(--secondary-color));
+            box-shadow: 0 6px 8px rgba(58, 134, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .login-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+        }
+        
+        .login-footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        
+        .login-footer a:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+        
+        .message {
+            padding: 0.8rem 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        .error {
+            background-color: rgba(230, 57, 70, 0.1);
+            color: var(--danger-color);
+            border: 1px solid rgba(230, 57, 70, 0.2);
+        }
+        
+        .success {
+            background-color: rgba(42, 157, 143, 0.1);
+            color: var(--success-color);
+            border: 1px solid rgba(42, 157, 143, 0.2);
+        }
+        
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+                flex-direction: column;
+            }
+            
+            .nav-links {
+                margin-top: 1rem;
+            }
+            
+            .login-container {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-container" onclick="window.location.href='${pageContext.request.contextPath}/index.jsp'">
+            <img src="../images/1.avif" alt="HealthCare Logo" class="logo">
+            <span class="logo-name">Health<span>Care</span></span>
+        </div>
+        
+        <div class="nav-links">
+            <a href="${pageContext.request.contextPath}/view/AdminLogin.jsp" class="nav-btn admin-btn">
+                <i class="fas fa-user-shield"></i> ADMIN
+            </a>
+            <a href="${pageContext.request.contextPath}/view/DoctorLogin.jsp" class="nav-btn doctor-btn">
+                <i class="fas fa-user-md"></i> DOCTOR
+            </a>
+            <a href="${pageContext.request.contextPath}/view/UserLogin.jsp" class="nav-btn user-btn">
+                <i class="fas fa-user"></i> USER
+            </a>
+        </div>
+    </nav>
+    
+    <div class="login-wrapper">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="doctor-icon">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <h2>Doctor Login</h2>
+                <p>Access your medical dashboard</p>
+            </div>
+            
+            <% if(request.getAttribute("error") != null) { %>
+                <div class="message error">
+                    <%= request.getAttribute("error") %>
+                </div>
+            <% } %>
+            
+            <% if(request.getAttribute("success") != null) { %>
+                <div class="message success">
+                    <%= request.getAttribute("success") %>
+                </div>
+            <% } %>
+            
+            <form action="${pageContext.request.contextPath}/DoctorLoginServlet" method="post">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <div class="input-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="doctorId">Doctor ID</label>
+                    <div class="input-icon">
+                        <i class="fas fa-id-badge"></i>
+                    </div>
+                    <input type="text" id="doctorId" name="doctorId" placeholder="Enter your doctor ID" required>
+                </div>
+                
+                <div class="form-dropdown">
+                    <label for="user-type">User Type</label>
+                    <div class="dropdown-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <select id="user-type" name="doctor" class="dropdown-select" required>
+                        <option value="" disabled selected>Select user type</option>
+                        <option value="doctor">Doctor</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+                
+                <div class="login-footer">
+                    <a href="ForgotPassword.jsp?type=Doctor">Need help accessing your account?</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

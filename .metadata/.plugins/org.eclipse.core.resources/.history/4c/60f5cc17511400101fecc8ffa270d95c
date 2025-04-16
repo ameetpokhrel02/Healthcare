@@ -1,0 +1,48 @@
+package model;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class HealthcareDao {
+	private static final String URL = "jdbc:mysql://localhost:3306/healthcare";
+	private static final String USERNAME = "root";
+	private static final String PASSWORD = "12345678";
+
+	public static Connection getConnection() {
+		Connection connection =null;
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+		} catch (ClassNotFoundException | SQLException ex) {
+			System.out.println("Connection Faild.");
+			ex.printStackTrace();
+		}
+		return connection;
+	}
+
+	public boolean adminLogin(Healthcare healthcare) throws SQLException {
+		String query = "SELECT 1 FROM users WHERE email = ? AND password = ? AND role = ?";
+
+		try (Connection connection = getConnection();
+				PreparedStatement prepareStatement = connection.prepareStatement(query)) {
+
+			prepareStatement.setString(1, healthcare.getEmail());
+			prepareStatement.setString(2, healthcare.getPassword());
+			prepareStatement.setString(3, healthcare.getRole());
+
+			try (ResultSet resultSet = prepareStatement.executeQuery()) {
+                return resultSet.next(); 
+            }
+			
+
+		} catch (SQLException e) {
+	        e.printStackTrace();
+	        return false;
+		}
+
+	}
+
+}

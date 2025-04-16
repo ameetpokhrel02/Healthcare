@@ -1,0 +1,65 @@
+package controller;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import model.User;
+import model.HealthcareDao;
+
+import java.io.IOException;
+
+@WebServlet("/UserLoginServlet")
+public class UserLoginServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+       
+    public UserLoginServlet() {
+        super();
+    }
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        response.getWriter().append("Served at: ").append(request.getContextPath());
+    }
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String email = request.getParameter("email");
+        String password = request.getParameter("password");
+        
+        if (email == null || email.trim().isEmpty() || 
+            password == null || password.trim().isEmpty()) {
+            
+            request.setAttribute("error", "Email and password are required.");
+            request.getRequestDispatcher("/view/UserLogin.jsp").forward(request, response);
+            return;
+        }
+        
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword(password);
+        user.setRole("user"); // Set role to user
+        
+        HealthcareDao healthcareDao = new HealthcareDao();
+        
+        try {
+            if (healthcareDao.userLogin(user)) {
+                HttpSession session = request.getSession();
+                session.setAttribute("userId", user.getUsers_id());
+                session.setAttribute("username", user.getUsername());
+                session.setAttribute("email", user.getEmail());
+                session.setAttribute("phone", user.getPhone());
+                session.setAttribute("role", user.getRole());
+                
+                response.sendRedirect(request.getContextPath() + "/view/UserDashboard.jsp");
+            } else {
+                request.setAttribute("error", "Invalid credentials. Please try again.");
+                request.getRequestDispatcher("/view/UserLogin.jsp").forward(request, response);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            request.setAttribute("error", "System error. Please try again later.");
+            request.getRequestDispatcher("/view/UserLogin.jsp").forward(request, response);
+        }
+    }
+}

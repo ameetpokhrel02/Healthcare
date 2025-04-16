@@ -1,0 +1,45 @@
+package model;
+
+public class Healthcare {
+	private String adminUsername;
+	private String adminPassword;
+	private String admin;
+	
+	
+	
+	public Healthcare(String adminUsername, String adminPassword) {
+		this.adminUsername = adminUsername;
+		this.adminPassword = adminPassword;
+		this.admin = admin;
+	}
+
+
+	public String getAdminUsername() {
+		return adminUsername;
+	}
+
+
+	public void setAdminUsername(String adminUsername) {
+		this.adminUsername = adminUsername;
+	}
+	
+	public String getAdmin() {
+		return admin;
+	}
+	
+	public void setAdmin(String admin) {
+		this.admin = admin;
+	}
+
+
+	public String getAdminPassword() {
+		return adminPassword;
+	}
+
+
+	public void setAdminPassword(String adminPassword) {
+		this.adminPassword = adminPassword;
+	}
+
+	
+}

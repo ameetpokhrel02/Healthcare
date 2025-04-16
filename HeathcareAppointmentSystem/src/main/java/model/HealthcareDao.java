@@ -1,0 +1,224 @@
+package model;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+
+
+public class HealthcareDao {
+    private static final String URL = "jdbc:mysql://localhost:3306/healthcare";
+    private static final String USERNAME = "root";
+    private static final String PASSWORD = "12345678";
+
+    public static Connection getConnection() {
+        Connection connection = null;
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+        } catch (ClassNotFoundException | SQLException ex) {
+            System.out.println("Connection Failed.");
+            ex.printStackTrace();
+        }
+        return connection;
+    }
+
+    public boolean adminLogin(Healthcare healthcare) throws SQLException {
+        String query = "SELECT password, role FROM users WHERE email = ?";
+        
+        try (Connection connection = getConnection();
+             PreparedStatement prepareStatement = connection.prepareStatement(query)) {
+            
+            prepareStatement.setString(1, healthcare.getEmail());
+            
+            try (ResultSet resultSet = prepareStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    String storedPassword = resultSet.getString("password");
+                    String storedRole = resultSet.getString("role");
+                    
+                    return storedPassword.equals(healthcare.getPassword()) 
+                           && storedRole.equalsIgnoreCase(healthcare.getRole());
+                }
+                return false; 
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    public boolean doctorLogin(Doctor doctor) {
+        String query = "SELECT u.password, u.role, d.full_name, d.specialization, d.doctorId " +
+                       "FROM users u " +
+                       "JOIN doctors d ON u.users_id = d.users_id " +
+                       "WHERE u.username = ? AND d.doctorId = ?";
+        
+        try (Connection connection = getConnection();
+             PreparedStatement prepareStatement = connection.prepareStatement(query)) {
+            
+            prepareStatement.setString(1, doctor.getUsername());
+            prepareStatement.setString(2, doctor.getDoctorId());
+            
+            try (ResultSet resultSet = prepareStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    String storedPassword = resultSet.getString("password");
+                    String storedRole = resultSet.getString("role");
+                    String fullName = resultSet.getString("full_name");
+                    String specialization = resultSet.getString("specialization");
+                    String storedDoctorId = resultSet.getString("doctorId");
+                    
+                    // Set the additional doctor info in the Doctor object
+                    doctor.setDoctorName(fullName);
+                    doctor.setSpecialization(specialization);
+                    
+                    return storedPassword.equals(doctor.getPassword()) && 
+                           storedRole.equalsIgnoreCase("doctor") &&
+                           storedDoctorId.equals(doctor.getDoctorId());
+                }
+                return false;
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+    
+   
+    
+    public boolean userLogin(User user) {
+        String query = "SELECT u.users_id, u.password, u.role, p.full_name, p.dob, p.gender, p.blood_type, p.address, p.phone " +
+                       "FROM users u " +
+                       "JOIN patient p ON u.users_id = p.users_id " +
+                       "WHERE u.username = ? AND u.role = ?";
+        
+        try (Connection connection = getConnection();
+             PreparedStatement prepareStatement = connection.prepareStatement(query)) {
+            
+            prepareStatement.setString(1, user.getUsername());
+            prepareStatement.setString(2, user.getRole());
+            
+            try (ResultSet resultSet = prepareStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    String storedPassword = resultSet.getString("password");
+                    int userId = resultSet.getInt("users_id");
+                    
+                    // Verify password
+                    if (storedPassword.equals(user.getPassword())) {
+                        // Set additional user info in the User object
+                        user.setUserId(userId);
+                        user.setFullName(resultSet.getString("full_name"));
+                        user.setDob(resultSet.getString("dob"));
+                        user.setGender(resultSet.getString("gender"));
+                        user.setBloodType(resultSet.getString("blood_type"));
+                        user.setAddress(resultSet.getString("address"));
+                        user.setPhone(resultSet.getString("phone"));
+                        
+                        return true;
+                    }
+                }
+                return false;
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+    
+    
+    public boolean registerUser(User user) {
+        Connection connection = null;
+        PreparedStatement userStmt = null;
+        PreparedStatement patientStmt = null;
+        
+        try {
+            connection = getConnection();
+            connection.setAutoCommit(false); // Start transaction
+            
+            // 1. Insert into users table
+            String userQuery = "INSERT INTO users (username, password, email, phone, role) " +
+                             "VALUES (?, ?, ?, ?, ?)";
+            userStmt = connection.prepareStatement(userQuery, Statement.RETURN_GENERATED_KEYS);
+            
+            // Use email as username
+            userStmt.setString(1, user.getEmail());
+            userStmt.setString(2, user.getPassword());
+            userStmt.setString(3, user.getEmail());
+            userStmt.setString(4, user.getPhone());
+            userStmt.setString(5, user.getRole());
+            
+            int userRows = userStmt.executeUpdate();
+            if (userRows == 0) {
+                return false;
+            }
+            
+            // Get the generated users_id
+            int userId = -1;
+            try (ResultSet generatedKeys = userStmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    userId = generatedKeys.getInt(1);
+                } else {
+                    throw new SQLException("Creating user failed, no ID obtained.");
+                }
+            }
+            
+            // 2. Insert into patient table
+            String patientQuery = "INSERT INTO patient (users_id, full_name) VALUES (?, ?)";
+            patientStmt = connection.prepareStatement(patientQuery);
+            patientStmt.setInt(1, userId);
+            patientStmt.setString(2, user.getFullName());
+            
+            int patientRows = patientStmt.executeUpdate();
+            
+            if (patientRows > 0) {
+                connection.commit(); // Commit transaction
+                return true;
+            } else {
+                connection.rollback(); // Rollback if patient insert fails
+                return false;
+            }
+        } catch (SQLException e) {
+            try {
+                if (connection != null) connection.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            
+            // Check for duplicate email (MySQL error code 1062)
+            if (e.getErrorCode() == 1062) {
+                return false;
+            }
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (userStmt != null) userStmt.close();
+                if (patientStmt != null) patientStmt.close();
+                if (connection != null) {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public boolean isEmailExists(String email) {
+        String query = "SELECT 1 FROM users WHERE email = ? LIMIT 1";
+        try (Connection connection = getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            
+            stmt.setString(1, email);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next(); // Returns true if email exists
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+  
+}

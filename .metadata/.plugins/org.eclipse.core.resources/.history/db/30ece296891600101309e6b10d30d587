@@ -1,0 +1,889 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" 
+pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Doctor Dashboard | HealthCare Appointment System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary-color: #60a5fa;
+            --accent-color: #93c5fd;
+            --light-gray: #f8fafc;
+            --dark-gray: #64748b;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --border-radius: 12px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: #f1f5f9;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+        
+        .navbar {
+            background-color: white;
+            color: var(--dark-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 5%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .logo-container:hover {
+            transform: scale(1.05);
+        }
+        
+        .logo {
+            width: 45px;
+            height: 45px;
+            margin-right: 12px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--light-gray);
+        }
+        
+        .logo-name {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--primary-color);
+        }
+        
+        .logo-name span {
+            color: var(--success-color);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .nav-btn {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            padding: 10px 20px;
+            border-radius: 30px;
+            transition: all 0.3s;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-btn i {
+            font-size: 14px;
+        }
+        
+        .doctor-btn {
+            background-color: var(--primary-color);
+        }
+        
+        .logout-btn {
+            background-color: var(--danger-color);
+        }
+        
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        /* Dashboard styles */
+        .dashboard-container {
+            display: flex;
+            min-height: calc(100vh - 72px);
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: white;
+            padding: 2rem 1.5rem;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+        }
+        
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .doctor-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 1rem;
+            border: 3px solid var(--accent-color);
+        }
+        
+        .doctor-info h3 {
+            font-size: 1.1rem;
+            color: var(--primary-dark);
+            margin-bottom: 0.3rem;
+        }
+        
+        .doctor-info p {
+            font-size: 0.85rem;
+            color: var(--dark-gray);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        
+        .doctor-info p i {
+            color: var(--success-color);
+            font-size: 0.7rem;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+        }
+        
+        .menu-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--dark-gray);
+            margin: 1.5rem 0 0.8rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .menu-item {
+            margin-bottom: 0.5rem;
+        }
+        
+        .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            color: var(--dark-gray);
+            text-decoration: none;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        
+        .menu-link i {
+            margin-right: 0.8rem;
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .menu-link:hover, .menu-link.active {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .menu-link.active {
+            font-weight: 600;
+        }
+        
+        .dropdown-menu {
+            list-style: none;
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        
+        .dropdown-menu.show {
+            max-height: 500px;
+        }
+        
+        .dropdown-item {
+            margin-bottom: 0.3rem;
+        }
+        
+        .dropdown-link {
+            display: flex;
+            align-items: center;
+            padding: 0.6rem 1rem;
+            color: var(--dark-gray);
+            text-decoration: none;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+        
+        .dropdown-link i {
+            margin-right: 0.8rem;
+            font-size: 0.9rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .dropdown-link:hover, .dropdown-link.active {
+            background-color: rgba(59, 130, 246, 0.05);
+            color: var(--primary-color);
+        }
+        
+        .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+        
+        .dropdown-toggle i.chevron {
+            transition: transform 0.3s;
+            font-size: 0.8rem;
+        }
+        
+        .dropdown-toggle i.chevron.down {
+            transform: rotate(90deg);
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 2.5rem;
+            background-color: #f8fafc;
+        }
+        
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 1.8rem;
+            color: var(--primary-dark);
+            font-weight: 700;
+        }
+        
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+        }
+        
+        .breadcrumb a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        .breadcrumb i {
+            margin: 0 0.5rem;
+            font-size: 0.7rem;
+            color: var(--dark-gray);
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card.appointments {
+            border-left-color: var(--success-color);
+        }
+        
+        .stat-card.patients {
+            border-left-color: var(--accent-color);
+        }
+        
+        .stat-card.schedule {
+            border-left-color: var(--warning-color);
+        }
+        
+        .stat-title {
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card.appointments .stat-value {
+            color: var(--success-color);
+        }
+        
+        .stat-card.patients .stat-value {
+            color: var(--accent-color);
+        }
+        
+        .stat-card.schedule .stat-value {
+            color: var(--warning-color);
+        }
+        
+        .stat-change {
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        
+        .stat-change.positive {
+            color: var(--success-color);
+        }
+        
+        .stat-change.negative {
+            color: var(--danger-color);
+        }
+        
+        .todays-appointments {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+            color: var(--primary-dark);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .section-title i {
+            font-size: 1.1rem;
+            color: var(--accent-color);
+        }
+        
+        .appointment-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .appointment-table th {
+            text-align: left;
+            padding: 0.8rem 1rem;
+            background-color: #f8fafc;
+            color: var(--dark-gray);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .appointment-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.95rem;
+        }
+        
+        .appointment-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .patient-info {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .patient-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-badge.success {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+        
+        .status-badge.warning {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+        
+        .status-badge.danger {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+        
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .action-btn.view {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .action-btn.complete {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+        
+        .action-btn.cancel {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .action-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .action-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .action-icon.appointments {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+        
+        .action-icon.schedule {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .action-icon.patients {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+        
+        .action-icon.prescriptions {
+            background-color: rgba(156, 163, 175, 0.1);
+            color: var(--dark-gray);
+        }
+        
+        .action-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary-dark);
+        }
+        
+        .action-desc {
+            font-size: 0.85rem;
+            color: var(--dark-gray);
+        }
+        
+        @media (max-width: 1200px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                padding: 1.5rem;
+            }
+            
+            .sidebar-header {
+                margin-bottom: 1.5rem;
+            }
+            
+            .main-content {
+                padding: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+            
+            .logo-name {
+                font-size: 1.3rem;
+            }
+            
+            .nav-links {
+                gap: 0.8rem;
+            }
+            
+            .nav-btn {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.85rem;
+            }
+            
+            .stats-container, .quick-actions {
+                grid-template-columns: 1fr;
+            }
+            
+            .appointment-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-container" onclick="window.location.href='${pageContext.request.contextPath}/index.jsp'">
+            <img src="../images/1.avif" alt="HealthCare Logo" class="logo">
+            <span class="logo-name">Health<span>Care</span></span>
+        </div>
+        
+        <div class="nav-links">
+            <a href="#" class="nav-btn doctor-btn">
+                <i class="fas fa-user-md"></i> DOCTOR DASHBOARD
+            </a>
+            <a href="${pageContext.request.contextPath}/DoctorLogoutServlet" class="nav-btn logout-btn">
+                <i class="fas fa-sign-out-alt"></i> LOGOUT
+            </a>
+        </div>
+    </nav>
+    
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../images/doctor-avatar.jpg" alt="Doctor Avatar" class="doctor-avatar">
+                <div class="doctor-info">
+                    <h3>Dr. <%= session.getAttribute("doctorName") != null ? session.getAttribute("doctorName") : "Doctor" %></h3>
+                    <p><i class="fas fa-circle"></i> <%= session.getAttribute("specialization") != null ? session.getAttribute("specialization") : "Specialist" %></p>
+                </div>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li class="menu-title">Navigation</li>
+                <li class="menu-item">
+                    <a href="#" class="menu-link active">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                
+                <li class="menu-title">Appointments</li>
+                <li class="menu-item">
+                    <a href="${pageContext.request.contextPath}/view/ViewDoctorAppointments.jsp" class="menu-link">
+                        <i class="fas fa-calendar-check"></i> My Appointments
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="${pageContext.request.contextPath}/view/DoctorSchedule.jsp" class="menu-link">
+                        <i class="fas fa-calendar-alt"></i> My Schedule
+                    </a>
+                </li>
+                
+                <li class="menu-title">Patients</li>
+                <li class="menu-item">
+                    <a href="${pageContext.request.contextPath}/view/MyPatients.jsp" class="menu-link">
+                        <i class="fas fa-procedures"></i> My Patients
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="${pageContext.request.contextPath}/view/CreatePrescription.jsp" class="menu-link">
+                        <i class="fas fa-prescription-bottle-alt"></i> Prescriptions
+                    </a>
+                </li>
+                
+                <li class="menu-item">
+                    <a href="#" class="menu-link dropdown-toggle" id="reportsDropdown">
+                        <i class="fas fa-chart-pie"></i> Reports
+                        <i class="fas fa-chevron-right chevron"></i>
+                    </a>
+                    <ul class="dropdown-menu" id="reportsMenu">
+                        <li class="dropdown-item">
+                            <a href="${pageContext.request.contextPath}/GenerateDoctorAppointmentReportServlet" class="dropdown-link">
+                                <i class="fas fa-calendar-alt"></i> Appointments Report
+                            </a>
+                        </li>
+                        <li class="dropdown-item">
+                            <a href="${pageContext.request.contextPath}/GeneratePatientReportServlet" class="dropdown-link">
+                                <i class="fas fa-user-injured"></i> Patients Report
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </aside>
+        
+        <main class="main-content">
+            <div class="content-header">
+                <h1 class="page-title">Doctor Dashboard</h1>
+                <div class="breadcrumb">
+                    <a href="${pageContext.request.contextPath}/index.jsp">Home</a>
+                    <i class="fas fa-chevron-right"></i>
+                    <span>Doctor Dashboard</span>
+                </div>
+            </div>
+            
+            <div class="stats-container">
+                <div class="stat-card appointments">
+                    <div class="stat-title">
+                        <i class="fas fa-calendar-check"></i> Today's Appointments
+                    </div>
+                    <div class="stat-value">8</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> 2 from yesterday
+                    </div>
+                </div>
+                
+                <div class="stat-card patients">
+                    <div class="stat-title">
+                        <i class="fas fa-user-injured"></i> Total Patients
+                    </div>
+                    <div class="stat-value">142</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> 5% from last month
+                    </div>
+                </div>
+                
+                <div class="stat-card schedule">
+                    <div class="stat-title">
+                        <i class="fas fa-clock"></i> Upcoming Slots
+                    </div>
+                    <div class="stat-value">15</div>
+                    <div class="stat-change negative">
+                        <i class="fas fa-arrow-down"></i> 3 from yesterday
+                    </div>
+                </div>
+            </div>
+            
+            <div class="todays-appointments">
+                <h2 class="section-title">
+                    <i class="fas fa-calendar-day"></i> Today's Appointments
+                </h2>
+                
+                <table class="appointment-table">
+                    <thead>
+                        <tr>
+                            <th>Patient</th>
+                            <th>Time</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="patient-info">
+                                    <img src="../images/patient1.jpg" alt="Patient" class="patient-avatar">
+                                    <span>John Smith</span>
+                                </div>
+                            </td>
+                            <td>09:30 AM</td>
+                            <td>Regular Checkup</td>
+                            <td><span class="status-badge success">Confirmed</span></td>
+                            <td>
+                                <button class="action-btn view">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button class="action-btn complete">
+                                    <i class="fas fa-check"></i> Complete
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="patient-info">
+                                    <img src="../images/patient2.jpg" alt="Patient" class="patient-avatar">
+                                    <span>Sarah Johnson</span>
+                                </div>
+                            </td>
+                            <td>11:15 AM</td>
+                            <td>Follow-up Visit</td>
+                            <td><span class="status-badge warning">Pending</span></td>
+                            <td>
+                                <button class="action-btn view">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button class="action-btn complete">
+                                    <i class="fas fa-check"></i> Confirm
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="patient-info">
+                                    <img src="../images/patient3.jpg" alt="Patient" class="patient-avatar">
+                                    <span>Michael Brown</span>
+                                </div>
+                            </td>
+                            <td>02:45 PM</td>
+                            <td>Consultation</td>
+                            <td><span class="status-badge danger">Cancelled</span></td>
+                            <td>
+                                <button class="action-btn view">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="patient-info">
+                                    <img src="../images/patient4.jpg" alt="Patient" class="patient-avatar">
+                                    <span>Emily Davis</span>
+                                </div>
+                            </td>
+                            <td>04:30 PM</td>
+                            <td>Annual Physical</td>
+                            <td><span class="status-badge success">Confirmed</span></td>
+                            <td>
+                                <button class="action-btn view">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button class="action-btn complete">
+                                    <i class="fas fa-check"></i> Complete
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="quick-actions">
+                <div class="action-card" onclick="window.location.href='${pageContext.request.contextPath}/view/ViewDoctorAppointments.jsp'">
+                    <div class="action-icon appointments">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h3 class="action-title">View Appointments</h3>
+                    <p class="action-desc">Check all your upcoming appointments</p>
+                </div>
+                
+                <div class="action-card" onclick="window.location.href='${pageContext.request.contextPath}/view/DoctorSchedule.jsp'">
+                    <div class="action-icon schedule">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h3 class="action-title">Manage Schedule</h3>
+                    <p class="action-desc">Update your availability</p>
+                </div>
+                
+                <div class="action-card" onclick="window.location.href='${pageContext.request.contextPath}/view/MyPatients.jsp'">
+                    <div class="action-icon patients">
+                        <i class="fas fa-user-injured"></i>
+                    </div>
+                    <h3 class="action-title">My Patients</h3>
+                    <p class="action-desc">View your patient records</p>
+                </div>
+                
+                <div class="action-card" onclick="window.location.href='${pageContext.request.contextPath}/view/CreatePrescription.jsp'">
+                    <div class="action-icon prescriptions">
+                        <i class="fas fa-prescription-bottle-alt"></i>
+                    </div>
+                    <h3 class="action-title">Create Prescription</h3>
+                    <p class="action-desc">Issue new prescriptions</p>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // Toggle dropdown menu for reports
+        document.getElementById('reportsDropdown').addEventListener('click', function(e) {
+            e.preventDefault();
+            const menu = document.getElementById('reportsMenu');
+            const chevron = this.querySelector('.chevron');
+            
+            menu.classList.toggle('show');
+            chevron.classList.toggle('down');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.menu-item')) {
+                const menu = document.getElementById('reportsMenu');
+                const chevron = document.querySelector('#reportsDropdown .chevron');
+                
+                if (menu.classList.contains('show')) {
+                    menu.classList.remove('show');
+                    chevron.classList.remove('down');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

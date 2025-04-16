@@ -1,0 +1,64 @@
+package controller;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.io.IOException;
+import model.HealthcareDao;
+import model.User;
+
+@WebServlet("/UserLoginServlet")
+public class UserLoginServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+    private HealthcareDao healthcareDao;
+
+    @Override
+    public void init() throws ServletException {
+        healthcareDao = new HealthcareDao();
+    }
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        String email = request.getParameter("email");
+        String password = request.getParameter("password");
+        
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword(password);
+
+        try {
+            if (healthcareDao.userLogin(user)) {
+                // Login successful - create session
+                HttpSession session = request.getSession();
+                
+                // Set user attributes in session
+                session.setAttribute("userId", user.getUsers_id());
+                session.setAttribute("username", user.getUsername());
+                session.setAttribute("email", user.getEmail());
+                session.setAttribute("role", user.getRole());
+                session.setAttribute("phone", user.getPhone());
+                
+                // Redirect to user dashboard
+                response.sendRedirect(request.getContextPath() + "/view/UserDashboard.jsp");
+            } else {
+                // Login failed
+                request.setAttribute("error", "Invalid email or password");
+                request.getRequestDispatcher("/view/UserLogin.jsp").forward(request, response);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "An error occurred during login");
+            request.getRequestDispatcher("/view/UserLogin.jsp").forward(request, response);
+        }
+    }
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        // Redirect to login page
+        response.sendRedirect(request.getContextPath() + "/view/UserLogin.jsp");
+    }
+}

@@ -1,0 +1,15 @@
+package model;
+
+import java.sql.Connection;
+
+public class DoctorDao {
+	
+	public void connectionDatabase() {
+		
+			HealthcareDao healthcareDao = new HealthcareDao();
+			Connection connection = healthcareDao.getConnection();
+		}
+	
+	
+
+}

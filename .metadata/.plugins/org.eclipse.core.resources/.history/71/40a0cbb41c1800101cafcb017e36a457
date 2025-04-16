@@ -1,0 +1,126 @@
+package model;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class HealthcareDao {
+    private static final String URL = "jdbc:mysql://localhost:3306/healthcare";
+    private static final String USERNAME = "root";
+    private static final String PASSWORD = "12345678";
+
+    public static Connection getConnection() {
+        Connection connection = null;
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+        } catch (ClassNotFoundException | SQLException ex) {
+            System.out.println("Connection Failed.");
+            ex.printStackTrace();
+        }
+        return connection;
+    }
+
+    public boolean adminLogin(Healthcare healthcare) throws SQLException {
+        String query = "SELECT password, role FROM users WHERE email = ?";
+        
+        try (Connection connection = getConnection();
+             PreparedStatement prepareStatement = connection.prepareStatement(query)) {
+            
+            prepareStatement.setString(1, healthcare.getEmail());
+            
+            try (ResultSet resultSet = prepareStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    String storedPassword = resultSet.getString("password");
+                    String storedRole = resultSet.getString("role");
+                    
+                    return storedPassword.equals(healthcare.getPassword()) 
+                           && storedRole.equalsIgnoreCase(healthcare.getRole());
+                }
+                return false; 
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    public boolean doctorLogin(Doctor doctor) {
+        String query = "SELECT u.password, u.role, d.full_name, d.specialization, d.doctorId " +
+                       "FROM users u " +
+                       "JOIN doctors d ON u.users_id = d.users_id " +
+                       "WHERE u.username = ? AND d.doctorId = ?";
+        
+        try (Connection connection = getConnection();
+             PreparedStatement prepareStatement = connection.prepareStatement(query)) {
+            
+            prepareStatement.setString(1, doctor.getUsername());
+            prepareStatement.setString(2, doctor.getDoctorId());
+            
+            try (ResultSet resultSet = prepareStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    String storedPassword = resultSet.getString("password");
+                    String storedRole = resultSet.getString("role");
+                    String fullName = resultSet.getString("full_name");
+                    String specialization = resultSet.getString("specialization");
+                    String storedDoctorId = resultSet.getString("doctorId");
+                    
+                    // Set the additional doctor info in the Doctor object
+                    doctor.setDoctorName(fullName);
+                    doctor.setSpecialization(specialization);
+                    
+                    return storedPassword.equals(doctor.getPassword()) && 
+                           storedRole.equalsIgnoreCase("doctor") &&
+                           storedDoctorId.equals(doctor.getDoctorId());
+                }
+                return false;
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+    
+    public boolean userLogin(User user) {
+        String query = "SELECT u.users_id, u.username, u.password, u.role, u.email, " +
+                      "p.full_name, p.dob, p.gender, p.blood_type, p.address, p.phone " +
+                      "FROM users u " +
+                      "JOIN patient p ON u.users_id = p.users_id " +
+                      "WHERE u.email = ? AND u.role = 'user'";
+        
+        try (Connection connection = getConnection();
+             PreparedStatement prepareStatement = connection.prepareStatement(query)) {
+            
+            prepareStatement.setString(1, user.getEmail());
+            
+            try (ResultSet resultSet = prepareStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    String storedPassword = resultSet.getString("password");
+                    
+                    // Verify password
+                    if (storedPassword.equals(user.getPassword())) {
+                        // Set user details from the query result
+                        user.setUsername(resultSet.getString("username"));
+                        user.setRole(resultSet.getString("role"));
+                        user.setFull_name(resultSet.getString("full_name"));
+                        user.setDob(resultSet.getDate("dob"));
+                        user.setGender(resultSet.getString("gender"));
+                        user.setBlood_type(resultSet.getString("blood_type").charAt(0));
+                        user.setAddress(resultSet.getString("address"));
+                        user.setPhone(resultSet.getString("phone"));
+                        user.setUsers_id(resultSet.getInt("users_id"));
+                        user.setEmail(resultSet.getString("email"));
+                        return true;
+                    }
+                }
+                return false;
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+  
+}

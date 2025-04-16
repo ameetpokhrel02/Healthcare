@@ -1,0 +1,61 @@
+package controller;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import model.Healthcare;
+import model.HealthcareDao;
+
+import java.io.IOException;
+
+@WebServlet("/AdminLoginServlet")
+public class AdminLoginServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+       
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        String email = request.getParameter("email"); // Changed from username to email
+        String password = request.getParameter("password");
+        String role = request.getParameter("role");
+        
+        // Validation
+        if(email == null || email.trim().isEmpty() || 
+           password == null || password.trim().isEmpty() || 
+           role == null || role.trim().isEmpty()) {
+            request.setAttribute("error", "All fields are required.");
+            request.getRequestDispatcher("/view/AdminLogin.jsp").forward(request, response);
+            return;
+        }
+        
+        // Create healthcare object
+        Healthcare healthcare = new Healthcare(email, password, role);
+        healthcare.setEmail(email);
+        healthcare.setPassword(password);
+        healthcare.setRole(role);
+        
+        HealthcareDao healthcareDao = new HealthcareDao();
+        
+        try {
+            if(healthcareDao.adminLogin(healthcare)) {
+                HttpSession session = request.getSession();
+                session.setAttribute("adminEmail", email);
+                session.setAttribute("role", role);
+                session.setMaxInactiveInterval(30*60);
+                
+                System.out.println("Login successful for: " + email);
+                response.sendRedirect(request.getContextPath() + "/view/AdminDashboard.jsp");
+            } else {
+                request.setAttribute("error", "Invalid credentials. Please try again.");
+                request.getRequestDispatcher("/view/AdminLogin.jsp").forward(request, response);
+            }
+        } catch(Exception ex) {
+            System.err.println("Login Error: " + ex.getMessage());
+            request.setAttribute("error", "System error occurred. Please try again.");
+            request.getRequestDispatcher("/view/AdminLogin.jsp").forward(request, response);
+        }
+    }
+}

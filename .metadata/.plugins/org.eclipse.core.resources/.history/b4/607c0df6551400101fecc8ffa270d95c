@@ -1,0 +1,56 @@
+package model;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class HealthcareDao {
+    private static final String URL = "jdbc:mysql://localhost:3306/healthcare";
+    private static final String USERNAME = "root";
+    private static final String PASSWORD = "12345678";
+
+    public static Connection getConnection() {
+        Connection connection = null;
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+        } catch (ClassNotFoundException | SQLException ex) {
+            System.err.println("Connection Failed: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+        return connection;
+    }
+
+    public boolean adminLogin(Healthcare healthcare) throws SQLException {
+        String query = "SELECT password, role FROM users WHERE email = ?";
+        
+        try (Connection connection = getConnection();
+             PreparedStatement prepareStatement = connection.prepareStatement(query)) {
+            
+            prepareStatement.setString(1, healthcare.getEmail());
+            
+            try (ResultSet resultSet = prepareStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    String storedPassword = resultSet.getString("password");
+                    String storedRole = resultSet.getString("role");
+                    
+                    // Debug output
+                    System.out.println("DB Password: " + storedPassword);
+                    System.out.println("Input Password: " + healthcare.getPassword());
+                    System.out.println("DB Role: " + storedRole);
+                    System.out.println("Input Role: " + healthcare.getRole());
+                    
+                    // Compare both password and role
+                    return storedPassword.equals(healthcare.getPassword()) 
+                           && storedRole.equalsIgnoreCase(healthcare.getRole());
+                }
+                return false; // No user found with this email
+            }
+        } catch (SQLException e) {
+            System.err.println("Login Error: " + e.getMessage());
+            throw e; // Re-throw to handle in servlet
+        }
+    }
+}
