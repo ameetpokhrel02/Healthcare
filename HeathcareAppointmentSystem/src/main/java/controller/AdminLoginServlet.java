@@ -12,7 +12,7 @@ import model.HealthcareDao;
 import java.io.IOException;
 
 /**
- * Servlet implementation class AdminLoginServlet
+ * Servlet implementation class AdminLoginSevlet
  */
 @WebServlet("/AdminLoginServlet")
 public class AdminLoginServlet extends HttpServlet {
